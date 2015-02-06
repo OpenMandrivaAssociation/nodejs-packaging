@@ -1,6 +1,6 @@
 Name:           nodejs-packaging
 Version:        1
-Release:        2
+Release:        3
 Group:          Development/Other
 Summary:        RPM Macros and Utilities for Node.js Packaging
 BuildArch:      noarch
