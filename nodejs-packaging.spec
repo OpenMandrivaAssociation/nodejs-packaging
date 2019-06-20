@@ -1,25 +1,29 @@
+%global macrosdir %(d=%{_rpmconfigdir}/macros.d; [ -d $d ] || d=%{_sysconfdir}/rpm; echo $d)
+
 Name:           nodejs-packaging
-Version:        1
-Release:        5
-Group:          Development/Other
+Version:        20
+Release:        1%{?dist}
 Summary:        RPM Macros and Utilities for Node.js Packaging
 BuildArch:      noarch
 License:        MIT
-URL:            https://abf.io/dsilakov/nodejs-packaging-rosa
-Source0:        %{name}-rosa-%{version}.tar.xz
+URL:            https://fedoraproject.org/wiki/Node.js/Packagers
+Source0:        https://releases.pagure.org/%{name}/%{name}-fedora-%{version}.tar.xz
+#ExclusiveArch:  %{nodejs_arches} noarch
 
-# For 2to3
-BuildRequires:	python
+BuildRequires:  python3
 
-Requires:       nodejs >= 0.10.12
-Requires:       rpm-mandriva-setup-build
+#nodejs-devel before 0.10.12 provided these macros and owned /usr/share/node
+Requires:       nodejs(engine) >= 0.10.12
+Requires:       rpm-openmandriva-setup-build
 
 %description
 This package contains RPM macros and other utilities useful for packaging
 Node.js modules and applications in RPM-based distributions.
 
+
 %prep
-%setup -qn %{name}-rosa-%{version}
+%autosetup -p 1 -n %{name}-fedora-%{version}
+
 
 %build
 2to3 -w nodejs.prov
@@ -27,17 +31,27 @@ Node.js modules and applications in RPM-based distributions.
 2to3 -w nodejs-symlink-deps
 2to3 -w nodejs-fixdep
 rm -f *.bak
+#nothing to do
+
 
 %install
-install -Dpm0644 nodejs.macros %{buildroot}%{_sysconfdir}/rpm/macros.nodejs
-install -Dpm0755 nodejs.prov %{buildroot}%{_rpmhome}/nodejs.prov
-install -Dpm0755 nodejs.req %{buildroot}%{_rpmhome}/nodejs.req
-install -Dpm0755 nodejs-symlink-deps %{buildroot}%{_rpmhome}/nodejs-symlink-deps
-install -Dpm0755 nodejs-fixdep %{buildroot}%{_rpmhome}/nodejs-fixdep
+install -Dpm0644 macros.nodejs %{buildroot}%{macrosdir}/macros.nodejs
+install -Dpm0644 nodejs.attr %{buildroot}%{_rpmconfigdir}/fileattrs/nodejs.attr
+install -pm0755 nodejs.prov %{buildroot}%{_rpmconfigdir}/nodejs.prov
+install -pm0755 nodejs.req %{buildroot}%{_rpmconfigdir}/nodejs.req
+install -pm0755 nodejs-symlink-deps %{buildroot}%{_rpmconfigdir}/nodejs-symlink-deps
+install -pm0755 nodejs-fixdep %{buildroot}%{_rpmconfigdir}/nodejs-fixdep
+install -pm0755 nodejs-setversion %{buildroot}%{_rpmconfigdir}/nodejs-setversion
 install -Dpm0644 multiver_modules %{buildroot}%{_datadir}/node/multiver_modules
 
+
+%check
+./test/run
+
+
 %files
-%doc LICENSE
+%license LICENSE
+%{macrosdir}/macros.nodejs
+%{_rpmconfigdir}/fileattrs/nodejs*.attr
+%{_rpmconfigdir}/nodejs*
 %{_datadir}/node/multiver_modules
-%{_sysconfdir}/rpm/macros.nodejs
-%{_rpmhome}/nodejs*
