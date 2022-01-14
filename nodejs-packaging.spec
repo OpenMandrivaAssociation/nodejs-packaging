@@ -1,38 +1,59 @@
+# For the sake of being able to exchange packages, this
+# package is (more or less) kept in sync with the Fedora
+# package at https://src.fedoraproject.org/rpms/nodejs-packaging
+#
+# Please try to remain compatible.
 %global macrosdir %(d=%{_rpmconfigdir}/macros.d; [ -d $d ] || d=%{_sysconfdir}/rpm; echo $d)
 
 Name:           nodejs-packaging
-Version:	25
+Version:	2021.06
 Release:	1
 Summary:        RPM Macros and Utilities for Node.js Packaging
 BuildArch:      noarch
 License:        MIT
 URL:            https://fedoraproject.org/wiki/Node.js/Packagers
-Source0:        https://releases.pagure.org/%{name}/%{name}-fedora-%{version}.tar.xz
-#ExclusiveArch:  %{nodejs_arches} noarch
-
+Source0000:	test.tar.zst
+Source0001:	https://src.fedoraproject.org/rpms/nodejs-packaging/raw/rawhide/f/LICENSE
+Source0002:	https://src.fedoraproject.org/rpms/nodejs-packaging/raw/rawhide/f/README.md
+Source0003:	https://src.fedoraproject.org/rpms/nodejs-packaging/raw/rawhide/f/macros.nodejs
+Source0004:	https://src.fedoraproject.org/rpms/nodejs-packaging/raw/rawhide/f/multiver_modules
+Source0005:	https://src.fedoraproject.org/rpms/nodejs-packaging/raw/rawhide/f/nodejs-fixdep
+Source0006:	https://src.fedoraproject.org/rpms/nodejs-packaging/raw/rawhide/f/nodejs-setversion
+Source0007:	https://src.fedoraproject.org/rpms/nodejs-packaging/raw/rawhide/f/nodejs-symlink-deps
+Source0008:	https://src.fedoraproject.org/rpms/nodejs-packaging/raw/rawhide/f/nodejs.attr
+Source0009:	https://src.fedoraproject.org/rpms/nodejs-packaging/raw/rawhide/f/nodejs.prov
+Source0010:	https://src.fedoraproject.org/rpms/nodejs-packaging/raw/rawhide/f/nodejs.req
+Source0011:	https://src.fedoraproject.org/rpms/nodejs-packaging/raw/rawhide/f/nodejs-packaging-bundler
+Patch0:		https://src.fedoraproject.org/rpms/nodejs-packaging/pull-request/7.patch
 BuildRequires:  python3
 
 #nodejs-devel before 0.10.12 provided these macros and owned /usr/share/node
-Requires:       nodejs(engine) >= 0.10.12
+Requires:       nodejs
 Requires:       rpm-openmandriva-setup-build
 
 %description
 This package contains RPM macros and other utilities useful for packaging
 Node.js modules and applications in RPM-based distributions.
 
+%package bundler
+Summary:	Bundle a node.js application dependencies
+Requires:	npm
+Requires:	coreutils, findutils, jq
+ 
+%description bundler
+nodejs-packaging-bundler bundles a node.js application node_module dependencies
+It gathers the application tarball.
+It generates a runtime (prod) tarball with runtime node_module dependencies
+It generates a testing (dev) tarball with node_module dependencies for testing
+It generates a bundled license file that gets the licenses in the runtime
+dependency tarball
 
 %prep
-%autosetup -p 1 -n %{name}-fedora-%{version}
-
+cp -a %{S:1} %{S:2} %{S:3} %{S:4} %{S:5} %{S:6} %{S:7} %{S:8} %{S:9} %{S:10} %{S:11} .
+tar xf %{S:0}
+%autopatch -p1
 
 %build
-2to3 -w nodejs.prov
-2to3 -w nodejs.req
-2to3 -w nodejs-symlink-deps
-2to3 -w nodejs-fixdep
-rm -f *.bak
-#nothing to do
-
 
 %install
 install -Dpm0644 macros.nodejs %{buildroot}%{macrosdir}/macros.nodejs
@@ -43,11 +64,10 @@ install -pm0755 nodejs-symlink-deps %{buildroot}%{_rpmconfigdir}/nodejs-symlink-
 install -pm0755 nodejs-fixdep %{buildroot}%{_rpmconfigdir}/nodejs-fixdep
 install -pm0755 nodejs-setversion %{buildroot}%{_rpmconfigdir}/nodejs-setversion
 install -Dpm0644 multiver_modules %{buildroot}%{_datadir}/node/multiver_modules
-
+install -Dpm0755 nodejs-packaging-bundler %{buildroot}%{_bindir}/nodejs-packaging-bundler
 
 %check
 ./test/run
-
 
 %files
 %license LICENSE
@@ -55,3 +75,6 @@ install -Dpm0644 multiver_modules %{buildroot}%{_datadir}/node/multiver_modules
 %{_rpmconfigdir}/fileattrs/nodejs*.attr
 %{_rpmconfigdir}/nodejs*
 %{_datadir}/node/multiver_modules
+
+%files bundler
+%{_bindir}/nodejs-packaging-bundler
