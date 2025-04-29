@@ -35,3 +35,7 @@
 
 # no-op macro to allow spec compatibility with EPEL
 %nodejs_find_provides_and_requires %{nil}
+
+%nodejs_install \
+mkdir -p %{buildroot}%{nodejs_sitelib} \
+npm_conf_prefix=%{buildroot}%{_prefix} npm install -g %{S:0}
