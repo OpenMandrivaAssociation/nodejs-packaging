@@ -7,7 +7,7 @@
 
 Name:           nodejs-packaging
 Version:	2023.10
-Release:	1
+Release:	2
 Summary:        RPM Macros and Utilities for Node.js Packaging
 BuildArch:      noarch
 License:        MIT
