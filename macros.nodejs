@@ -38,4 +38,4 @@
 
 %nodejs_install \
 mkdir -p %{buildroot}%{nodejs_sitelib} \
-npm_conf_prefix=%{buildroot}%{_prefix} npm install -g %{S:0}
+npm_config_prefix=%{buildroot}%{_prefix} npm install -g %{S:0}
